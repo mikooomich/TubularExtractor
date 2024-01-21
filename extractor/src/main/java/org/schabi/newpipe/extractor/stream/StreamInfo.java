@@ -33,6 +33,9 @@ import org.schabi.newpipe.extractor.localization.DateWrapper;
 import org.schabi.newpipe.extractor.sponsorblock.SponsorBlockApiSettings;
 import org.schabi.newpipe.extractor.sponsorblock.SponsorBlockExtractorHelper;
 import org.schabi.newpipe.extractor.sponsorblock.SponsorBlockSegment;
+import org.schabi.newpipe.extractor.returnyoutubedislike.ReturnYouTubeDislikeApiSettings;
+import org.schabi.newpipe.extractor.returnyoutubedislike.ReturnYouTubeDislikeExtractorHelper;
+import org.schabi.newpipe.extractor.returnyoutubedislike.ReturnYouTubeDislikeInfo;
 import org.schabi.newpipe.extractor.utils.ExtractorHelper;
 import org.schabi.newpipe.extractor.utils.ExtractorLogger;
 
@@ -86,24 +89,27 @@ public class StreamInfo extends Info {
 
     public static StreamInfo getInfo(
         final String url,
-        @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings)
+        @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings,
+        @Nullable final ReturnYouTubeDislikeApiSettings returnYouTubeDislikeApiSettings)
         throws IOException, ExtractionException {
         ExtractorLogger.d(TAG, "getInfo({url})", url);
-        return getInfo(NewPipe.getServiceByUrl(url), url, sponsorBlockApiSettings);
+        return getInfo(NewPipe.getServiceByUrl(url), url, sponsorBlockApiSettings, returnYouTubeDislikeApiSettings);
     }
 
     public static StreamInfo getInfo(
         @Nonnull final StreamingService service,
         final String url,
-        @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings)
+        @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings,
+        @Nullable final ReturnYouTubeDislikeApiSettings returnYouTubeDislikeApiSettings)
         throws IOException, ExtractionException {
         ExtractorLogger.d(TAG, "getInfo({service},{url})", service, url);
-        return getInfo(service.getStreamExtractor(url), sponsorBlockApiSettings);
+        return getInfo(service.getStreamExtractor(url), sponsorBlockApiSettings, returnYouTubeDislikeApiSettings);
     }
 
     public static StreamInfo getInfo(
             @Nonnull final StreamExtractor extractor,
-            @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings)
+            @Nullable final SponsorBlockApiSettings sponsorBlockApiSettings,
+            @Nullable final ReturnYouTubeDislikeApiSettings returnYouTubeDislikeApiSettings)
             throws ExtractionException, IOException {
         ExtractorLogger.d(TAG, "getInfo({extractor})", extractor);
         extractor.fetchPage();
@@ -117,6 +123,13 @@ public class StreamInfo extends Info {
                 final SponsorBlockSegment[] sponsorBlockSegments =
                         SponsorBlockExtractorHelper.getSegments(streamInfo, sponsorBlockApiSettings);
                 streamInfo.setSponsorBlockSegments(sponsorBlockSegments);
+            }
+
+            if (returnYouTubeDislikeApiSettings != null) {
+                final ReturnYouTubeDislikeInfo rydInfo  =
+                        ReturnYouTubeDislikeExtractorHelper.getInfo(
+                                streamInfo, returnYouTubeDislikeApiSettings);
+                streamInfo.setReturnYouTubeDislikeInfo(rydInfo);
             }
 
             return streamInfo;
@@ -432,6 +445,7 @@ public class StreamInfo extends Info {
     private ContentAvailability contentAvailability = ContentAvailability.AVAILABLE;
 
     private List<SponsorBlockSegment> sponsorBlockSegments = new ArrayList<>();
+    @Nullable private ReturnYouTubeDislikeInfo rydInfo;
 
     /**
      * Preview frames, e.g. for the storyboard / seekbar thumbnail preview
@@ -817,5 +831,14 @@ public class StreamInfo extends Info {
         if (target != null) {
             removeSponsorBlockSegment(target);
         }
+    }
+
+    @Nullable
+    public ReturnYouTubeDislikeInfo getRydInfo() {
+        return rydInfo;
+    }
+
+    public void setReturnYouTubeDislikeInfo(final @Nullable ReturnYouTubeDislikeInfo rydInfo) {
+        this.rydInfo = rydInfo;
     }
 }
