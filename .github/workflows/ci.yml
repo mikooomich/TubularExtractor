@@ -2,21 +2,6 @@ name: CI
 
 on:
   workflow_dispatch:
-    inputs:
-      downloaderType:
-        description: 'Downloader Type'
-        type: choice
-        options:
-          - MOCK
-          - REAL
-  schedule:
-      # once per day
-    - cron: 0 0 * * *
-  push:
-    branches:
-      - dev
-      - master
-  pull_request:
 
 permissions:
   contents: read
